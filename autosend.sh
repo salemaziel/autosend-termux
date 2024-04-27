@@ -55,7 +55,7 @@ while true; do
 done
 fi
 
-
+log "$CONTACTS_CSV is the csv file being used."
 
 TEMPLATE_FILE="./message_template.txt"
 
@@ -68,21 +68,22 @@ if [[ ! -f "$TEMPLATE_FILE" ]]; then
 		echo -e "Enter your name to include in the message:"
 		read -r SENDER_NAME
 		SENDER_NAME="${SENDER_NAME:-$default_sender}"
-		echo $SENDER_NAME
 		SENDER_NAME=$(echo "${SENDER_NAME}" | sed 's/[^a-zA-Z]//g')
 
 		echo -e "\nYou entered $SENDER_NAME"
 		read -p "Is that correct? [y/n] " -n 1 -r
 		if [[ $REPLY =~ ^[Yy]$ ]]; then
 			log "Using sender name $SENDER_NAME"
+			echo -e "\n\n"
 			break
 		elif [[ $REPLY =~ ^[Nn]$ ]]; then
-			log "Incorrectly entered sender name as $SENDER_NAME, trying again"
+			echo -e "\n\n"
+			log "Incorrect7ly entered sender name as $SENDER_NAME, trying again"
 		else
-			echo -e "Invalid response. Answer y for yes or n for no"
+			echo -e "\nInvalid response. Answer y for yes or n for no"
 		fi
 	done
-	MSG="this is $SENDER_NAME from San Diego DSA! I wanted to make sure you’ve heard about the Quarterly Assembly we have scheduled for Sunday at 4. Can we count on you to attend?"
+	MSG="this is $SENDER_NAME from San Diego DSA. Just wanted to make sure you’ve heard about the Quarterly Assembly scheduled for Sunday at 4pm. Can we count on you to attend?"
 	MSG_TEMPLATE="${MSG_TEMPLATE:-$MSG}"
 
 else
@@ -117,10 +118,16 @@ do
 	phone=${Phone:2}
 
     if validate_phone "$phone"; then
-#        if termux-sms-send -n "$phone" "Hey $first_name, $MSG_TEMPLATE"; then
-	if echo -e "$phone \nHey $first_name, $MSG_TEMPLATE"; then
-            log "SMS sent to $first_name $last_name: $phone"
-        else
+        if termux-sms-send -n "$phone" "Hey $first_name, $MSG_TEMPLATE"; then
+#	if echo -e "$phone \nHey $first_name, $MSG_TEMPLATE"; then
+		echo "Messsage sent to $first_name $last_name"
+		log "SMS sent to $first_name $last_name: $phone"
+		# Generate a random number between 1 and 5
+		random_seconds=$((RANDOM % 4 + 1))
+		echo -e "Sleeping for $random_seconds seconds...\n"
+		sleep $random_seconds
+
+	else
             log "Failed to send SMS to $first_name $last_name: $phone"
         fi
     else
